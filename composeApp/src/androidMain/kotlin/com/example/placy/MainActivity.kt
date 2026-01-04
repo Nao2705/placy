@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         MapKit.initialize(this)
 
         setContent {
-            App()
+            TempApp()
         }
     }
 
