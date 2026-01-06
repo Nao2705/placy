@@ -1,31 +1,21 @@
 package com.example.placy
 
-import io.ktor.client.*
-import io.ktor.client.plugins.auth.*
-import io.ktor.client.plugins.auth.providers.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.put
+import io.ktor.client.request.get
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.readRawBytes
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 
-class NextcloudClient(
-    private val baseUrl: String,
-    private val user: String,
-    private val pass: String
-) {
-    private val client = HttpClient {
-        install(Auth) {
-            basic {
-                credentials {
-                    BasicAuthCredentials(user, pass)
-                }
-                sendWithoutRequest { true }
-            }
-        }
-    }
+class NextcloudClient(private val client: HttpClient) {
+    private val baseUrl = BuildConfig.SERVER_URL
+    private val user = BuildConfig.USERNAME
 
-    suspend fun uploadImage(imageData: ByteArray): Boolean {
-        val url = "$baseUrl/remote.php/dav/files/$user/test.jpg"
+    suspend fun uploadImage(imageData: ByteArray, filename: String): Boolean {
+        val url = "$baseUrl/remote.php/dav/files/$user/$filename.jpg"
 
         try {
             val response: HttpResponse = client.put(url) {
@@ -57,9 +47,5 @@ class NextcloudClient(
             e.printStackTrace()
             null
         }
-    }
-
-    fun close() {
-        client.close()
     }
 }

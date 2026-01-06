@@ -1,6 +1,7 @@
 package com.example.placy
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope

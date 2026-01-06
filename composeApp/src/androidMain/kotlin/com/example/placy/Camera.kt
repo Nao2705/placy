@@ -1,51 +1,131 @@
 package com.example.placy
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
 import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
-fun CameraView() {
-    var showCamera by remember { mutableStateOf(false) }
+fun CameraView(navController: NavController, latitude: Double, longitude: Double) {
+    var cameraState by remember { mutableStateOf<CameraState>(CameraState.Loading) }
 
     val scope = rememberCoroutineScope()
 
-    val nextcloudClient = remember {
-        NextcloudClient(
-            baseUrl = BuildConfig.SERVER_URL,
-            pass = BuildConfig.PASSWORD,
-            user = BuildConfig.USERNAME
-        )
-    }
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (showCamera) {
-            ImagePickerLauncher(
-                config = ImagePickerConfig(
-                    onPhotoCaptured = { result ->
-                        showCamera = false
-                        scope.launch {
-                            nextcloudClient.uploadImage(result.loadBytes())
-                        }
-                    },
-                    onError = {
-                        showCamera = false
-                    },
-                    onDismiss = {
-                        showCamera = false
-                    }
-                )
-            )
-        }
+    val nextcloudClient = remember { NextcloudClient(NetworkModule.httpClient) }
+    val api = remember { ApiService(NetworkModule.httpClient) }
+
+    LaunchedEffect(Unit) {
+        // Небольшая задержка перед открытием камеры
+        delay(300)
+        cameraState = CameraState.Ready
     }
 
-    Button(onClick = { showCamera = true }) {
-        Text("Take Photo")
+    when (cameraState) {
+        CameraState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Text("Подготовка камеры...")
+            }
+        }
+
+        CameraState.Ready -> {
+            Box (
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(
+                        top = WindowInsets.statusBars
+                            .asPaddingValues()
+                            .calculateTopPadding(),
+                        bottom = WindowInsets.navigationBars
+                        .asPaddingValues()
+                        .calculateBottomPadding()
+                    )
+            ) {
+                ImagePickerLauncher(
+                    config = ImagePickerConfig(
+                        onPhotoCaptured = { result ->
+                            cameraState = CameraState.Uploading
+                            scope.launch {
+                                val photoId = UUID.randomUUID().toString()
+
+                                val bytes = result.loadBytes()
+
+                                val isUploaded = nextcloudClient.uploadImage(bytes, photoId)
+
+                                if (isUploaded) {
+                                    api.saveMark(
+                                        GeoMark(
+                                            photoUUID = photoId,
+                                            latitude = latitude,
+                                            longitude = longitude
+                                        )
+                                    )
+                                    navController.popBackStack()
+                                }
+                            }
+                        },
+                        onError = { error ->
+                            navController.popBackStack() // Возвращаемся при ошибке камеры
+                        },
+                        onDismiss = {
+                            navController.popBackStack() // Возвращаемся при отмене
+                        }
+                    )
+                )
+            }
+
+            // Показываем индикатор загрузки во время загрузки фото
+            if (cameraState == CameraState.Uploading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                    Text("Загрузка фото...")
+                }
+            }
+        }
+
+        is CameraState.Error -> {
+            val errorMessage = (cameraState as CameraState.Error).message
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Ошибка: $errorMessage")
+            }
+        }
+
+        CameraState.Uploading -> {
+            // Уже обрабатывается выше
+        }
     }
+}
+
+sealed class CameraState {
+    object Loading : CameraState()
+    object Ready : CameraState()
+    object Uploading : CameraState()
+    data class Error(val message: String) : CameraState()
 }

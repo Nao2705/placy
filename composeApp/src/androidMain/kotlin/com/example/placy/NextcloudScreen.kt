@@ -14,7 +14,7 @@ fun NextcloudScreen() {
     val password = BuildConfig.PASSWORD
 
     val imageLoader = remember {
-        getNextcloudImageLoader(context, baseUrl, username, password)
+        getNextcloudImageLoader(context)
     }
 
     val imagePath = "Nextcloud.png"
