@@ -8,7 +8,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import placy.composeapp.generated.resources.Res
-import placy.composeapp.generated.resources.pin
+import placy.composeapp.generated.resources.blue_pin
 import ru.sulgik.mapkit.compose.Placemark
 import ru.sulgik.mapkit.compose.YandexMap
 import ru.sulgik.mapkit.compose.imageProvider
@@ -36,7 +36,7 @@ fun MapScreen() {
                 30.0f
             )
     }
-    val imageProvider = imageProvider(Res.drawable.pin)
+    val imageProvider = imageProvider(Res.drawable.blue_pin)
     YandexMap(
         cameraPositionState = cameraPositionState,
         modifier = Modifier.fillMaxSize()
