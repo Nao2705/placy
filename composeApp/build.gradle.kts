@@ -35,6 +35,7 @@ kotlin {
             implementation("io.coil-kt.coil3:coil-compose:3.3.0")
             implementation("io.coil-kt:coil-svg:2.5.0")
         }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -59,6 +60,7 @@ kotlin {
             implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
             implementation("io.github.ismoy:imagepickerkmp:1.0.28-beta3")
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -94,26 +96,74 @@ android {
                 value = properties.getProperty(element)
             )
         }
+
+        // ДОБАВИТЬ для тестов
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         buildConfig = true
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.4"
+    }
+
+    // ДОБАВИТЬ ЭТИ НАСТРОЙКИ
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+
+    // ДОБАВИТЬ для указания AndroidManifest для тестов
+    sourceSets {
+        getByName("androidTest") {
+            manifest.srcFile("src/androidTest/AndroidManifest.xml")
+            java.srcDirs("src/androidTest/kotlin")
+            resources.srcDirs("src/androidTest/resources")
+        }
     }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    implementation(libs.kotlin.test)
+    implementation(libs.junit)
+    implementation(libs.androidx.runner)
+    implementation(libs.androidx.rules)
+    implementation(libs.androidx.junit.v115)
+    implementation(libs.androidx.core)
+
+    // Mockito
+    implementation(libs.mockito.kotlin)
+    implementation(libs.mockito.core)
+
+    // Coroutines тестирование
+    implementation(libs.kotlinx.coroutines.test)
+
+    // Ktor Mock
+    implementation(libs.ktor.client.mock)
+
+    // Compose UI тестирование (если нужно)
+    implementation(libs.androidx.ui.test.junit4)
 }
