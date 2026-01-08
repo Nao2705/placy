@@ -53,6 +53,7 @@ import androidx.core.graphics.rotationMatrix
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.compose.rememberAsyncImagePainter
@@ -99,6 +100,10 @@ fun TempMapScreen() {
     var showSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val cameraPositionState = rememberCameraPositionState()
+    val context = LocalPlatformContext.current
+    val imageLoader = remember {
+        getNextcloudImageLoader(context)
+    }
     val geolocator = Geolocator.mobile()
 
     LaunchedEffect(Unit) {
@@ -148,7 +153,8 @@ fun TempMapScreen() {
                 if (showSheet && selectedMark != null) {
                     SimpleFullScreenImageViewer(
                         imageUrl = "${BuildConfig.SERVER_URL}/remote.php/dav/files/${BuildConfig.USERNAME}/${selectedMark!!.photoUUID}.jpg",
-                        onDismiss = { showSheet = false }
+                        onDismiss = { showSheet = false },
+                        imageLoader = imageLoader
                     )
                 }
 
@@ -206,7 +212,8 @@ fun TempMapScreen() {
 @Composable
 fun SimpleFullScreenImageViewer(
     imageUrl: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    imageLoader: ImageLoader
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -222,16 +229,22 @@ fun SimpleFullScreenImageViewer(
                 .background(Color.Black)
                 .clickable(onClick = onDismiss)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build()
-                ),
-                contentDescription = "Полноэкранная фотография",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
+//            Image(
+//                painter = rememberAsyncImagePainter(
+//                    model = ImageRequest.Builder(LocalContext.current)
+//                        .data(imageUrl)
+//                        .crossfade(true)
+//                        .build()
+//                ),
+//                contentDescription = "Полноэкранная фотография",
+//                modifier = Modifier.fillMaxSize(),
+//                contentScale = ContentScale.Fit
+//            )
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "My Photo from Nextcloud",
+                imageLoader = imageLoader,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
