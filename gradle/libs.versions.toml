@@ -27,9 +27,11 @@ yandexMapkitKmpCompose = "0.4.1"
 compass = "2.4.1"
 navigationRuntimeKtx = "2.9.6"
 material3 = "1.4.0"
+coreSplashscreen = "1.0.1"
 
 [libraries]
 androidx-core = { module = "androidx.test:core", version.ref = "runner" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-junit-v115 = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }

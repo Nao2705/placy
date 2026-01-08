@@ -153,6 +153,7 @@ dependencies {
     implementation(libs.androidx.rules)
     implementation(libs.androidx.junit.v115)
     implementation(libs.androidx.core)
+    implementation(libs.androidx.core.splashscreen)
 
     // Mockito
     implementation(libs.mockito.kotlin)
